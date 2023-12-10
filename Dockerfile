@@ -7,5 +7,6 @@ WORKDIR /app
 RUN pip install -r requirements.txt
 COPY main.py /app/main.py
 COPY ./src /app/src
+COPY ./inputs /app/inputs
 
 CMD [ "python", "-u", "main.py" ]
