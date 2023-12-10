@@ -1,26 +1,3 @@
-'''
-Files to create / inputs needed
-base/base-values.yaml
-    - {{ ecr_repository }}
-
-envs/stage/values.yaml
-    - {{ image_tag }}
-    - hostnames : List[str]
-    - volume mount configs
-        - {{ claim_name }}
-        - {{ mount_sub_path }}
-    - externalSecret 
-        - {{ vault_path }}
-
-envs/prod/values.yaml
-    - {{ image_tag }}
-    - hostnames : List[str]
-    - externalSecret 
-        - {{ vault_path }}
-    - waf
-        {{ web_acl_name }}
-'''
-
 import os
 from typing import List, TypedDict
 
@@ -60,7 +37,7 @@ def render_app_configs(app_config: AppConfig):
             volume_mount_claim_name=e.get('volume_mount_claim_name', None),
             volume_mount_sub_path=e.get('volume_mount_sub_path', None),
             # TODO - if no secrets are written, set this to None
-            external_secret_vault_path=f'secret/{app_config["app_repo"]}/{e["env"]}',
+            external_secret_vault_path=f'secret/{app_config["app_repo"].split("/")[-1]}/{e["env"]}',
             web_acl_name=e.get('web_acl_name', None)
         )
 
