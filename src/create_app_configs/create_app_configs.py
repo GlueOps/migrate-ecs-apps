@@ -11,6 +11,7 @@ class AppEnvConfig(TypedDict):
     volume_mount_claim_name: str
     volume_mount_sub_path: str
     web_acl_name: str
+    vault_secrets: str
 
     
 class AppConfig(TypedDict):
@@ -29,6 +30,11 @@ def render_app_configs(app_config: AppConfig):
         ecr_repository=app_config['ecr_repository']
     )
     for e in app_config['env_configs']:
+        # evaluate presence of vault_secrets
+        if e['vault_secrets'] == {}:
+            external_secret_vault_path = None
+        else:
+            external_secret_vault_path = f'secret/{app_config["app_repo"].split("/")[-1]}/{e["env"]}'
         render_env_config(
             app_repo=app_config['app_repo'],
             app_env=e['env'],
@@ -36,8 +42,7 @@ def render_app_configs(app_config: AppConfig):
             hostnames=e['hostnames'],
             volume_mount_claim_name=e.get('volume_mount_claim_name', None),
             volume_mount_sub_path=e.get('volume_mount_sub_path', None),
-            # TODO - if no secrets are written, set this to None
-            external_secret_vault_path=f'secret/{app_config["app_repo"].split("/")[-1]}/{e["env"]}',
+            external_secret_vault_path=external_secret_vault_path,
             web_acl_name=e.get('web_acl_name', None)
         )
 
