@@ -53,12 +53,12 @@ for d in csv_app_data:
             }
         ]
     }
-    print(f'the following configurations are staged for {d["app_repo"]}')
+    print(f'the following configurations are staged for {d["app_repo"]}\n')
     pprint(app_config)
 
-    confirm = input('render templates and write secrets to vault (yolo/no): ').strip().lower()
+    confirm = input('\nrender templates and write secrets to vault (yolo/no): ').strip().lower()
     if confirm == 'yolo':
-        print('rendering templates and writing secrets')
+        print('\nrendering templates and writing secrets')
         render_app_configs(app_config)
     else:
-        print(f'skipping configuration of {d["app_repo"]}')
+        print(f'\nskipping configuration of {d["app_repo"]}\n\n')
