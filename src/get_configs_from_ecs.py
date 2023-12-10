@@ -20,8 +20,6 @@ def get_configs_from_ecs(
     task_definition_response = ecs_client.describe_task_definition(
         taskDefinition=task_definition_arn
     )
-    from pprint import pprint
-    pprint(task_definition_response)
     # get ecr_repository and image_tag
     image = task_definition_response['taskDefinition']['containerDefinitions'][0]['image']
     ecr_repository = image.split('/')[1].split(':')[0]
@@ -42,7 +40,7 @@ def get_configs_from_ecs(
     return {
         "ecr_repository": ecr_repository,
         "image_tag": image_tag,
-        "volume_mount_sub_path": volume_mount_sub_path,
         "volume_mount_path": volume_mount_point,
+        "volume_mount_sub_path": volume_mount_sub_path,
         "vault_secrets": vault_secrets
     }
