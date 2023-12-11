@@ -2,11 +2,12 @@ import os
 
 from glueops.setup_logging import configure as go_configure_logging
 from glueops.vault_client import VaultClient
-from pprint import pprint
 
 from src.create_app_configs.create_app_configs import render_app_configs
 from src.get_configs_from_ecs import get_configs_from_ecs
 from src.stage_app_data import stage_app_data_from_csv
+from src.style import Colors, pprint_dict
+
 
 # configure logger
 logger = go_configure_logging(
@@ -14,7 +15,7 @@ logger = go_configure_logging(
     level=os.getenv('PYTHON_LOG_LEVEL', 'INFO')
 )
 
-# configure vault clients for each cluster
+# configure vault clients for clusters
 nonprod_vault_client = VaultClient(
     vault_url=os.environ['VAULT_URL'],
     kubernetes_role=os.environ['KUBERNETES_ROLE'],
@@ -31,7 +32,17 @@ prod_vault_client = VaultClient(
 
 csv_app_data = stage_app_data_from_csv('/app/inputs/glueops_wip.csv')
 
+total_configurations = len(csv_app_data)
+print(f'\n\n{Colors.YELLOW}Staging{Colors.ENDC} {Colors.RED}{total_configurations}{Colors.ENDC} {Colors.YELLOW}application configurations:{Colors.ENDC}')
+pprint_dict({
+    r['app_repo']: [r['prod_ecs_service'], r['stage_ecs_service']]
+    for r in csv_app_data
+})
+
+i = 0
 for d in csv_app_data:
+    i += 1
+    print(f'{Colors.YELLOW}Application Configuration:{Colors.ENDC}')
     ecs_stage_conf = get_configs_from_ecs(
         cluster_arn=os.environ['STAGE_CLUSTER_ARN'],
         service_arn=d['stage_ecs_service']
@@ -86,17 +97,18 @@ for d in csv_app_data:
             }
         ]
     }
-    print(f'the following configurations are staged for {d["app_repo"]}\n')
-    pprint(app_config)
 
-    confirm = input('\nrender templates and write secrets to vault (yolo/no): ').strip().lower()
+    pprint_dict(app_config)
+    print(f'\n{Colors.YELLOW}Configurations staged for: {Colors.GREEN}{d["app_repo"]}{Colors.ENDC}{Colors.BLUE}{Colors.ENDC}\n')
+
+    confirm = input(f'\n{Colors.YELLOW}render templates and write secrets to vault{Colors.ENDC} ({Colors.GREEN}yolo{Colors.ENDC}/{Colors.RED}no{Colors.ENDC}): ').strip().lower()
     if confirm == 'yolo':
-        print('\nrendering templates and writing secrets')
+        print(f'\n{Colors.YELLOW}rendering templates and writing secrets{Colors.ENDC}')
         render_app_configs(app_config)
         # write secrets
         for app_env in app_config['env_configs']:
             if app_env['vault_secrets'] == {}:
-                print(f'no secrets to write for app: {app_config["app_repo"]} in env: {app_env["env"]}')
+                print(f'{Colors.YELLOW}no secrets to write for app: {Colors.GREEN}{app_config["app_repo"]}{Colors.ENDC} {Colors.YELLOW}in env:{Colors.ENDC} {Colors.GREEN}{app_env["env"]}{Colors.ENDC}')
                 continue
             elif app_env['env'] == 'stage':
                 write_response = nonprod_vault_client.write_data_to_vault(
@@ -109,7 +121,9 @@ for d in csv_app_data:
                     data=app_env['vault_secrets']
                 )
             else:
-                print(f'WARNING: unrecognized environment: {app_env["env"]}')
-            print(write_response)
+                print(f'{Colors.RED}WARNING:{Colors.ENDC} {Colors.YELLOW}unrecognized environment:{Colors.ENDC} {Colors.GREEN}{app_env["env"]}{Colors.ENDC}')
+            pprint_dict(write_response)
     else:
-        print(f'\nskipping configuration of {d["app_repo"]}\n\n')
+        print(f'\n{Colors.YELLOW}skipping configuration of:{Colors.ENDC} {Colors.GREEN}{d["app_repo"]}{Colors.ENDC}\n\n\n')
+    if i < total_configurations:
+        print(f'\n{Colors.MAGENTA}next configuration:{Colors.ENDC}\n\n')
