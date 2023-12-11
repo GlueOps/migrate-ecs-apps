@@ -17,16 +17,16 @@ logger = go_configure_logging(
 
 # configure vault clients for clusters
 nonprod_vault_client = VaultClient(
-    vault_url=os.environ['VAULT_URL'],
+    vault_url=os.environ['NONPROD_VAULT_URL'],
     kubernetes_role=os.environ['KUBERNETES_ROLE'],
-    vault_token=os.environ['VAULT_TOKEN'],
-    pomerium_cookie=os.environ['POMERIUM_COOKIE']
+    vault_token=os.environ['NONPROD_VAULT_TOKEN'],
+    pomerium_cookie=os.environ['NONPROD_POMERIUM_COOKIE']
 )
 prod_vault_client = VaultClient(
-    vault_url=os.environ['VAULT_URL'],
+    vault_url=os.environ['PROD_VAULT_URL'],
     kubernetes_role=os.environ['KUBERNETES_ROLE'],
-    vault_token=os.environ['VAULT_TOKEN'],
-    pomerium_cookie=os.environ['POMERIUM_COOKIE']
+    vault_token=os.environ['PROD_VAULT_TOKEN'],
+    pomerium_cookie=os.environ['PROD_POMERIUM_COOKIE']
 )
 
 
