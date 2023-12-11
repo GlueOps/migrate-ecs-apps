@@ -9,6 +9,7 @@ class AppEnvConfig(TypedDict):
     image_tag: str
     hostnames: List[str]
     volume_mount_claim_name: str
+    volume_mount_path: str
     volume_mount_sub_path: str
     web_acl_name: str
     vault_secrets: str
@@ -40,6 +41,7 @@ def render_app_configs(app_config: AppConfig):
             image_tag=e['image_tag'],
             hostnames=e['hostnames'],
             volume_mount_claim_name=e.get('volume_mount_claim_name', None),
+            volume_mount_path=e.get('volume_mount_path', None),
             volume_mount_sub_path=e.get('volume_mount_sub_path', None),
             external_secret_vault_path=e['vault_secrets_path'],
             web_acl_name=e.get('web_acl_name', None)
@@ -72,6 +74,7 @@ def render_env_config(
     image_tag: str,
     hostnames: List[str],
     volume_mount_claim_name: str = None,
+    volume_mount_path: str = None,
     volume_mount_sub_path: str = None,
     external_secret_vault_path: str = None,
     web_acl_name: str = None
@@ -89,6 +92,7 @@ def render_env_config(
         image_tag=image_tag,
         hostnames=hostnames,
         volume_mount_claim_name=volume_mount_claim_name,
+        volume_mount_path=volume_mount_path,
         volume_mount_sub_path=volume_mount_sub_path,
         external_secret_vault_path=external_secret_vault_path,
         web_acl_name=web_acl_name
