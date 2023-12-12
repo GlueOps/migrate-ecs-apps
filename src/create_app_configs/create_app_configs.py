@@ -24,7 +24,10 @@ class AppConfig(TypedDict):
 
 renderer_dir = os.path.dirname(os.path.abspath(__file__))
 template_dir = os.path.join(renderer_dir, 'templates')
-tpl_env = Environment(loader=FileSystemLoader(template_dir))
+tpl_env = Environment(
+    loader=FileSystemLoader(template_dir),
+    keep_trailing_newline=True
+)
 
 def render_app_configs(app_config: AppConfig):
     render_base_config(
