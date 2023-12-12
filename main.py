@@ -29,9 +29,10 @@ prod_vault_client = VaultClient(
     pomerium_cookie=os.environ['PROD_POMERIUM_COOKIE']
 )
 
-
+# load input csv
 csv_app_data = stage_app_data_from_csv('/app/inputs/glueops_wip.csv')
 
+# user configuration and prompts
 total_configurations = len(csv_app_data)
 print(f'\n\n{Colors.YELLOW}Staging{Colors.ENDC} {Colors.RED}{total_configurations}{Colors.ENDC} {Colors.YELLOW}application configurations:{Colors.ENDC}')
 pprint_dict({
@@ -39,6 +40,38 @@ pprint_dict({
     for r in csv_app_data
 })
 
+while True:
+    confirm_remove_secrets = input(
+        f'\n{Colors.YELLOW}remove secrets for testing?{Colors.ENDC} ({Colors.GREEN}yes{Colors.ENDC}/{Colors.RED}no{Colors.ENDC}): '
+    ).strip().lower()
+    if confirm_remove_secrets == 'yes':
+        print(f'\n{Colors.YELLOW} secrets will be removed for this run{Colors.ENDC}')
+        break
+    elif confirm_remove_secrets == 'no':
+        print(f'\n{Colors.YELLOW} secrets will{Colors.ENDC} {Colors.RED}NOT{Colors.ENDC} {Colors.YELLOW}be removed for this run{Colors.ENDC}')
+        break
+    else:
+        print(
+            f'\n{Colors.YELLOW}please enter "{Colors.GREEN}yes{Colors.ENDC}{Colors.YELLOW}" or "{Colors.ENDC}{Colors.GREEN}no{Colors.ENDC} {Colors.YELLOW}to determine secrets handline{Colors.ENDC}"'
+        )
+
+while True:
+    confirm_each_config = input(
+        f'\n{Colors.YELLOW}do you want to confirm each app config?{Colors.ENDC} ({Colors.GREEN}yes{Colors.ENDC}/{Colors.RED}no{Colors.ENDC}): '
+    ).strip().lower()
+    if confirm_each_config == 'yes':
+        print(f'\n{Colors.YELLOW} each app config will request confirmation{Colors.ENDC}')
+        break
+    elif confirm_each_config == 'no':
+        print(f'\n{Colors.YELLOW} you will{Colors.ENDC} {Colors.RED}NOT{Colors.ENDC} {Colors.YELLOW}be prompted to confirm each app config{Colors.ENDC}')
+        confirm = 'yolo'
+        break
+    else:
+        print(
+            f'\n{Colors.YELLOW}please enter "{Colors.GREEN}yes{Colors.ENDC}{Colors.YELLOW}" or "{Colors.ENDC}{Colors.GREEN}no{Colors.ENDC} {Colors.YELLOW}to determine secrets handline{Colors.ENDC}"'
+        )
+
+# config generation and secrets writing
 i = 0
 for d in csv_app_data:
     i += 1
@@ -52,21 +85,21 @@ for d in csv_app_data:
         service_arn=d['prod_ecs_service']
     )
 
+    # remove secrets for testing
+    if confirm_remove_secrets == 'yes':
+        import random
+        import string
 
-    #==== remove secrets for testing
-    import random
-    import string
+        def get_random_string():
+            rnd_str = string.ascii_letters
+            return ''.join(random.choice(rnd_str) for i in range(10))
 
-
-    def get_random_string():
-        rnd_str = string.ascii_letters
-        return ''.join(random.choice(rnd_str) for i in range(10))
-
-    for k in ecs_stage_conf['vault_secrets']:
-        ecs_stage_conf['vault_secrets'][k] = f'stage-{get_random_string()}'
-    for k in ecs_prod_conf['vault_secrets']:
-        ecs_prod_conf['vault_secrets'][k] = f'prod-{get_random_string()}'
-    #===== end secrets removal
+        for k in ecs_stage_conf['vault_secrets']:
+            ecs_stage_conf['vault_secrets'][k] = f'stage-{get_random_string()}'
+        for k in ecs_prod_conf['vault_secrets']:
+            ecs_prod_conf['vault_secrets'][k] = f'prod-{get_random_string()}'
+    elif confirm_remove_secrets == 'no':
+        pass
 
 
     app_config = {
@@ -101,11 +134,15 @@ for d in csv_app_data:
     pprint_dict(app_config)
     print(f'\n{Colors.YELLOW}Configurations staged for: {Colors.GREEN}{d["app_repo"]}{Colors.ENDC}{Colors.BLUE}{Colors.ENDC}\n')
 
-    confirm = input(f'\n{Colors.YELLOW}render templates and write secrets to vault{Colors.ENDC} ({Colors.GREEN}yolo{Colors.ENDC}/{Colors.RED}no{Colors.ENDC}): ').strip().lower()
+    if confirm_each_config == 'no':
+        confirm = 'yolo'
+    elif confirm_each_config == 'yes':
+        confirm = input(f'\n{Colors.YELLOW}render templates and write secrets to vault{Colors.ENDC} ({Colors.GREEN}yolo{Colors.ENDC}/{Colors.RED}no{Colors.ENDC}): ').strip().lower()
     if confirm == 'yolo':
         print(f'\n{Colors.YELLOW}rendering templates and writing secrets{Colors.ENDC}')
         render_app_configs(app_config)
-        # write secrets
+
+        ##=== write secrets
         for app_env in app_config['env_configs']:
             if app_env['vault_secrets'] == {}:
                 print(f'{Colors.YELLOW}no secrets to write for app: {Colors.GREEN}{app_config["app_repo"]}{Colors.ENDC} {Colors.YELLOW}in env:{Colors.ENDC} {Colors.GREEN}{app_env["env"]}{Colors.ENDC}')
