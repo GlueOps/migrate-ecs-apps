@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 from glueops.setup_logging import configure as go_configure_logging
 from glueops.vault_client import VaultClient
@@ -34,10 +35,10 @@ prod_vault_client = VaultClient(
 csv_app_data = stage_app_data_from_csv('/app/inputs/glueops_wip.csv')
 
 
-def check_prod_dns():
+def check_prod_dns(domains: List[str]):
     from requests.exceptions import JSONDecodeError
     for d in csv_app_data:
-        for r in d['prod_hostnames']:
+        for r in domains:
             try:
                 resp_json = check_dns(r).json()
                 try:
@@ -186,4 +187,7 @@ def configure_apps_for_migration():
         if i < total_configurations:
             print(f'\n{Colors.MAGENTA}next configuration:{Colors.ENDC}\n\n')
 
-configure_apps_for_migration()
+# configure_apps_for_migration()
+
+# for d in csv_app_data:
+#     check_prod_dns(d['prod_hostnames'])
