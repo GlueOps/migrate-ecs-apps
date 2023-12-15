@@ -1,0 +1,40 @@
+image:
+  tag: {{ image_tag }}
+ingress:
+  entries:
+    - name: public
+      hosts:
+      {%- for hostname in hostnames %}
+        - hostname: {{ hostname }}
+      {%- endfor %}
+deployment:
+  replicas: 2
+{%- if volume_mount_sub_path %}
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: {{ volume_mount_claim_name }}
+  volumeMounts:
+    - name: data
+      mountPath: {{ volume_mount_path }}
+      subPath: {{ volume_mount_sub_path }}
+{%- endif %}
+{%- if external_secret_vault_path %}
+externalSecret:
+  enabled: true
+  secrets:
+    app-secrets:
+      dataFrom:
+        key: {{ external_secret_vault_path }}
+{%- endif %}
+{%- if web_acl_name %}
+waf:
+  enabled: true
+  entries:
+    - name: waf
+      hosts:
+      {%- for hostname in hostnames %}
+        - hostname: {{ hostname }}
+      {%- endfor %}
+      webAclName: {{ web_acl_name }}
+{%- endif %}
