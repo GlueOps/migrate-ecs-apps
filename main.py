@@ -187,7 +187,7 @@ def configure_apps_for_migration():
         if i < total_configurations:
             print(f'\n{Colors.MAGENTA}next configuration:{Colors.ENDC}\n\n')
 
-# configure_apps_for_migration()
+configure_apps_for_migration()
 
 # for d in csv_app_data:
 #     check_prod_dns(d['prod_hostnames'])
