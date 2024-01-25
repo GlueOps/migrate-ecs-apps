@@ -7,6 +7,7 @@ from glueops.vault_client import VaultClient
 from src.check_dns import check_dns
 from src.create_app_configs.create_app_configs import render_app_configs
 from src.get_configs_from_ecs import get_configs_from_ecs
+from src.get_listener_rules import get_target_group_mapping
 from src.stage_app_data import stage_app_data_from_csv
 from src.style import Colors, pprint_dict
 
@@ -30,6 +31,13 @@ prod_vault_client = VaultClient(
     vault_token=os.environ['PROD_VAULT_TOKEN'],
     pomerium_cookie=os.environ['PROD_POMERIUM_COOKIE']
 )
+
+# get listener rules
+# stage_listener_rules = os.environ['NONPROD_LISTENER_ARNS'].split(',')
+# from pprint import pprint
+# pprint(
+#     get_target_group_mapping(stage_listener_rules)
+# )
 
 # load input csv
 csv_app_data = stage_app_data_from_csv('/app/inputs/glueops_wip.csv')
