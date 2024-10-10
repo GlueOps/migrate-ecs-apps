@@ -1,4 +1,4 @@
-boto3==1.34.162
+boto3==1.35.37
 glueops-helpers @ https://github.com/GlueOps/python-glueops-helpers-library/archive/refs/tags/v0.4.1.zip
 Jinja2==3.1.4
 requests==2.32.3
