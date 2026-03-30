@@ -1,5 +1,5 @@
 boto3==1.42.79
 glueops-helpers @ https://github.com/GlueOps/python-glueops-helpers-library/archive/refs/tags/v0.4.1.zip
 Jinja2==3.1.6
-requests==2.33.0
+requests==2.33.1
 Pygments==2.20.0
